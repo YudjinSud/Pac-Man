@@ -1,6 +1,8 @@
 #ifndef OOP_CELL_H
 #define OOP_CELL_H
 
+#define adjacencySize 4 // Вверх, вниз, влево, вправо
+
 enum Items {
     weapon,
     medicine,
@@ -16,11 +18,17 @@ enum Type {
 
 class Cell {
 
-public:
-    bool is_available = 1;
+private:
     Items item;
     Type type = normal;
 
+public:
+    bool is_available = true;
+    int adjacencyList[adjacencySize][2];
+    int num;
+    int x, y;
+
+    ~Cell() = default;
 };
 
 

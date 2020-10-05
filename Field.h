@@ -3,68 +3,78 @@
 
 #include "Cell.h"
 
-const int width =  3;
-const int height = 3;
+#include <iterator>
+#include <iostream>
 
-class SimpleIterator;
+const int width  = 10;
+const int height = 10;
 
-class Field
-{
+// По краям графа должны быть еще ряды/столбцы чтобы можно было удобно
+// запускать алгоритмы (по сути границы поля)
+#define wallOffset 2
+
+const int dx[] = {-1, 0, 1, 0};
+const int dy[] = {0, -1, 0, 1};
+
+class Field {
 private:
-    Field(int start_num, int end_num) : _start_no(start_num), _end_no(end_num)
-    {
-        _cells[start_num/height][start_num % width].type = start;
-        _cells[end_num/height][end_num % width].type = end;
-    }
+    Field(int start_num, int end_num);
 
-    ~Field() {}
+    void createGraph();
 
-    Field( const Field&);      // запретили конструктор копирования
-    Field& operator=( Field& ); // запретили присваивания
-    Field(Field && ); // Не нужен в синглтоне
-    Field& operator=(Field &&);
+    static Field *field;
 
-    static Field* field;
-
-    Cell _cells[height][width];
+    Cell **_cells;
     int _start_no;
     int _end_no;
 
+    size_t sizeAll = (width + wallOffset) * (height + wallOffset);
+
+    size_t availableSize = sizeAll;
+
+    int dfs(Cell from, bool *visited);
+
+    class iterator : public std::iterator<std::output_iterator_tag, Cell> {
+    public :
+        explicit iterator(Field &field, size_t index = 0);
+
+        Cell operator*() const;
+
+        iterator &operator++();
+
+        iterator &operator++(int);
+
+        bool operator!=(const iterator &) const;
+
+    private:
+        size_t nIndex = 0;
+        Field &field;
+    };
 
 public:
 
-    friend class SimpleIterator;
+    Field(Field &);                      // Конструктор копирования
+    Field &operator=(const Field &);              // Оператор копирования
+    Field(Field &&) noexcept;             // Конструктор перемещения
+    Field &operator=(Field &&) noexcept;  // Оператор перемещения
+
+    iterator begin();
+
+    iterator end();
+
+    size_t size() const;
+
     static Field *GetInstance(int start_num, int end_num);
 
+    bool checkConnectedComponent();
 
-    SimpleIterator *createIterator() const;
+    bool isAvailable(int x, int y);
 
-};
+    void makeWall(int num);
 
+    void makeWall(int x, int y);
 
-class SimpleIterator
-{
-    int index;
-    const Field *field;
-public:
-    SimpleIterator(const Field *f) : field(f)
-    {}
-
-    void first() {
-        index = 0;
-    }
-
-    void next() {
-        index++;
-    }
-
-    int isDone() {
-        return index ==  width*height;
-    }
-
-    Cell currentItem() {
-        return field->_cells[index / height][index % width];
-    }
+    ~Field();
 };
 
 
