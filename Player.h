@@ -10,16 +10,20 @@
 
 class Player {
 public :
-    Player(int x, int y);
+    Player(int x, int y) : x(x), y(y) {};
 
     void move(int deltaX, int deltaY, bool is_available);
 
     ~Player() = default;
 
     int x, y;
-private:
-    int score;
-    int life;
+
+    int score = 0, life = 3;
+
+    Player& operator+=(const Coin &right) {
+        this->score += right.isAlive;
+        return *this;
+    }
 
 };
 

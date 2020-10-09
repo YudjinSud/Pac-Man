@@ -2,9 +2,11 @@
 #define OOP_FIELD_H
 
 #include "Cell.h"
+#include "Item.h"
 
 #include <iterator>
 #include <iostream>
+#include <vector>
 
 const int width  = 10;
 const int height = 10;
@@ -52,7 +54,6 @@ private:
     };
 
 public:
-
     Field(Field &);                      // Конструктор копирования
     Field &operator=(const Field &);              // Оператор копирования
     Field(Field &&) noexcept;             // Конструктор перемещения
@@ -73,6 +74,12 @@ public:
     void makeWall(int num);
 
     void makeWall(int x, int y);
+
+    void initCoins(int* startCoords);
+
+    int *coordsByNum(int num);
+
+    std::vector<std::vector<Coin*>> coins;
 
     ~Field();
 };

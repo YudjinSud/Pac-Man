@@ -8,19 +8,17 @@
 //Интерфейс объекта поля (монетка или буст)
 class Item {
 public:
-    virtual ~Item() {};
-    virtual void create() = 0;
+    Item(int x, int y) : x {x}, y{y} {}
+     ~Item() {};
+
+    int x, y;
 };
 
 class Coin : public Item {
 public:
-    void create() override {
-        return;
-    }
-
-    ~Coin() override {
-
-    }
+    Coin(int x, int y) : Item {x, y} {}
+    bool isAlive = true;
+    ~Coin()  = default;
 };
 
 #endif //OOP_ITEM_H

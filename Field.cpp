@@ -86,6 +86,16 @@ void Field::createGraph() {
 }
 
 
+void Field::initCoins(int *startCoords) {
+    coins = std::vector<std::vector<Coin*>>(height+1, std::vector<Coin*>(width+1));
+    for(auto it : *this) {
+        if(it.is_available) {
+            coins[it.x][it.y] = new Coin(it.x,it.y);
+        }
+    }
+    coins[startCoords[0]][startCoords[1]]->isAlive = 0; // нет монетки на старте
+}
+
 Field::Field(int start_num, int end_num) : _start_no(start_num), _end_no(end_num) {
     _cells = new Cell *[height + wallOffset];
     for (int i = 0; i < height + wallOffset; i++) {
@@ -98,7 +108,7 @@ Field::Field(int start_num, int end_num) : _start_no(start_num), _end_no(end_num
     createGraph();
 }
 
-int *coordsByNum(int num) {
+int* Field::coordsByNum(int num) {
     int *coords = new int[2];
     coords[0] = (num - 1) / height + 1;
     coords[1] = (num - 1) % width + 1;
@@ -115,6 +125,7 @@ int *coordsByNum(int num) {
 int Field::dfs(Cell from, bool *visited) {
     int visitedCount = 1;
     visited[from.num] = true;
+//    for(int i = 1; i <= availableSize+1; i++)
     for (auto x : from.adjacencyList) {
         Cell to = _cells[x[0]][x[1]];
         if (to.is_available && !visited[to.num]) {
@@ -128,8 +139,8 @@ int Field::dfs(Cell from, bool *visited) {
  * Проверяет, связен ли граф (сохранен ли инвариант в текущий момент)
  */
 bool Field::checkConnectedComponent() {
-    bool *visited = new bool[availableSize + 1];
-    for(int i = 0; i < availableSize + 1; i++) visited[i] = false;
+    bool visited[size()];
+    for(int i = 1; i <= size(); i++) visited[i] = false;
     int *coords = coordsByNum(_start_no);
     int x = coords[0], y = coords[1];
     int df = dfs(_cells[x][y], visited);
@@ -188,6 +199,7 @@ Field::iterator Field::begin() {
 Field::iterator Field::end() {
     return Field::iterator(*this, size());
 }
+
 
 bool Field::iterator::operator!=(const iterator &other) const {
     return nIndex != other.nIndex;

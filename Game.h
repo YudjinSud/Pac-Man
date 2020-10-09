@@ -13,9 +13,10 @@
 
 
 #define widthPixels 640
-#define heightPixels 480
+#define heightPixels 640
 #define rectSize 25
 #define playerSize 7
+#define coinSize 3
 #define latency 5
 #define leftX widthPixels / 3
 #define leftY heightPixels/ 3
@@ -36,13 +37,24 @@ public:
     Field *f;
 
 private:
+    int start,  end;
+    int *startCoords, *endCoords;
+
     void drawWall(Cell f);
 
     void drawPlayer();
 
+    void drawCoins();
+
     Player *player;
 
+    void checkCoinsStatus();
+
+    void checkEndStatus();
+
     sf::Event events;
+
+    void drawCircleShape(sf::Color color, int size, int x, int y);
 };
 
 
