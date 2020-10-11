@@ -75,11 +75,11 @@ public:
 
     void makeWall(int x, int y);
 
-    void initCoins(int* startCoords);
+    void initItems(int* startCoords, const Creator& creator);
 
     int *coordsByNum(int num);
 
-    std::vector<std::vector<Coin*>> coins;
+    std::vector<std::vector<Item*>> coins;
 
     ~Field();
 };

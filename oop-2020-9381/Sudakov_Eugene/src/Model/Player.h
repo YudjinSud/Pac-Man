@@ -20,7 +20,7 @@ public :
 
     int score = 0, life = 3;
 
-    Player& operator+=(const Coin &right) {
+    Player& operator+=(const Item &right) {
         this->score += right.isAlive;
         return *this;
     }

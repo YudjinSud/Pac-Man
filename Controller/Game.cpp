@@ -10,8 +10,6 @@
 #define BORDER   "\033[1m\033[37m"      /* Bold Black */
 #define PLAIN  "\033[1m\033[33m"      /* Bold Yellow */
 
-#define v2f sf::Vector2f
-
 using namespace std;
 
 void dbgGraph(Field *f, int start, int end) {
@@ -38,8 +36,7 @@ void dbgGraph(Field *f, int start, int end) {
 
 
 void Game::init() {
-    window.create(sf::VideoMode(widthPixels, heightPixels), "PAC-MAN");
-
+    this->gui.create();
     // TODO(YudjinSud):
     // Logging system which will enable configure game start/end point
     // from file. Also this system should provide map-configuration.
@@ -59,10 +56,12 @@ void Game::init() {
 //    f->makeWall(9);
 //    f->makeWall(34);
 
-    f->initCoins(startCoords);
+    Creator *coinsFabric = new CoinCreator(); // Монетный двор (фабрика монет)
+    f->initItems(startCoords, *coinsFabric);
+
     dbgGraph(f, start, end);
 
-    while (window.isOpen()) {
+    while (gui.getWindow()->isOpen()) {
         tick();
         draw();
     }
@@ -83,20 +82,20 @@ void Game::checkEndStatus() {
     int cnt = 0;
     for (int i = 1; i <= height; i++) {
         for (int j = 1; j <= width; j++) {
-            Coin *c = f->coins[i][j];
+            Item *c = f->coins[i][j];
             if (c && c->isAlive) cnt++;
         }
     }
     bool isEndReached = endCoords[0] == player->x && endCoords[1] == player->y;
     if (player->life == 0 || cnt == 0 || isEndReached) {
-        window.close();
+        gui.stop();
     }
 }
 
 void Game::tick() {
-    while (window.pollEvent(events)) {
+    while (gui.getWindow()->pollEvent(events)) {
         if (events.type == sf::Event::Closed)
-            window.close();
+            gui.stop();
         if (events.type == sf::Event::KeyPressed) {
             processInput();
         }
@@ -124,63 +123,21 @@ void Game::processInput() {
                          f->isAvailable(player->x + 1, player->y));
             break;
         case sf::Keyboard::Escape:
-            window.close();
+            gui.stop();
     }
 
 }
 
-void Game::drawWall(Cell c) {
-    sf::RectangleShape sh;
-    sh.setSize(v2f(rectSize, rectSize));
-    sh.setFillColor(sf::Color::Blue);
-    sh.setOutlineColor(sf::Color::Red);
-    sh.setOutlineThickness(1);
-    sh.setPosition(leftX + c.y * rectSize, leftY + c.x * rectSize);
-    window.draw(sh);
-}
 
-void Game::drawCircleShape(sf::Color color, int size, int x, int y) {
-    sf::CircleShape sh;
-    sh.setRadius(size);
-    sh.setFillColor(color);
-    sh.setPosition(x, y);
-    sh.setOrigin(-rectSize / 4, -rectSize / 4);
-    window.draw(sh);
-}
-
-void Game::drawPlayer() {
-    drawCircleShape(sf::Color::Yellow, playerSize,
-                    leftX + player->y * rectSize,
-                    leftY + player->x * rectSize);
-}
-
-
-void Game::drawCoins() {
-    for (int i = 1; i <= height; i++) {
-        for (int j = 1; j <= width; j++) {
-            sf::Color color = sf::Color::Yellow;
-            Coin *c = f->coins[i][j];
-            if (c && c->isAlive) {
-                if(c->x == endCoords[0] && c->y == endCoords[1]) {
-                    color = sf::Color::Red;
-                }
-                drawCircleShape(color, coinSize,
-                                leftX + c->y * rectSize,
-                                leftY + c->x * rectSize);
-            }
-        }
-    }
-}
 
 void Game::draw() {
-    window.clear();
+    gui.clear();
     for (auto it : *f) {
         if (it.is_available == 0) {
-            drawWall(it);
+            gui.drawWall(it);
         }
     }
-    drawPlayer();
-    drawCoins();
-    sleep(sf::milliseconds(latency));
-    window.display();
+    gui.drawPlayer(*player);
+    gui.drawCoins(f, endCoords[0], endCoords[1]);
+    gui.display();
 }

@@ -1,8 +1,6 @@
 #include <iostream>
 
-#include "Field.h"
-#include "Game.h"
-
+#include "Controller/Game.h"
 
 int main() {
     Game game;

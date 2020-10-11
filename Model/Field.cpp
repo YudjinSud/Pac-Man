@@ -15,8 +15,18 @@ Field::Field(Field &&other) noexcept: _cells(other._cells),
     other._cells = nullptr;
 }
 
+void print(Cell **f) {
+    for(int i = 0; i < height + wallOffset; i++) {
+        for(int j = 0; j < width + wallOffset; j++) {
+            std::cout << f[i][j].num << " ";
+        }
+        std::cout << "\n";
+    }
+}
 
 void deepCopyField(Cell **f, Cell **s) {
+//    print(f);
+    print(s);
     f = new Cell *[height + wallOffset];
     for (int i = 0; i < height + wallOffset; i++) {
         f[i] = new Cell[width + wallOffset];
@@ -24,6 +34,7 @@ void deepCopyField(Cell **f, Cell **s) {
             f[i][j] = s[i][j];
         }
     }
+
 }
 
 
@@ -86,11 +97,11 @@ void Field::createGraph() {
 }
 
 
-void Field::initCoins(int *startCoords) {
-    coins = std::vector<std::vector<Coin*>>(height+1, std::vector<Coin*>(width+1));
+void Field::initItems(int *startCoords, const Creator& creator) {
+    coins = std::vector<std::vector<Item*>>(height+1, std::vector<Item*>(width+1));
     for(auto it : *this) {
         if(it.is_available) {
-            coins[it.x][it.y] = new Coin(it.x,it.y);
+            coins[it.x][it.y] = creator.FactoryMethod(it.x,it.y);
         }
     }
     coins[startCoords[0]][startCoords[1]]->isAlive = 0; // нет монетки на старте
