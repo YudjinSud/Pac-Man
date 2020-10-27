@@ -36,12 +36,12 @@ void dbgGraph(Field *f, int start, int end) {
 
 
 void Game::init() {
-    this->gui.create();
+    gui.create();
     // TODO(YudjinSud):
     // Logging system which will enable configure game start/end point
     // from file. Also this system should provide map-configuration.
 
-    start = 1, end = 3;
+    start = 1, end = 66;
     startCoords = f->coordsByNum(start);
     endCoords = f->coordsByNum(end);
 
@@ -50,14 +50,21 @@ void Game::init() {
 
     // Необходимо проверять, что это не вход и не выход
     f->makeWall(5);
-//    f->makeWall(15);
-//    f->makeWall(32);
-//    f->makeWall(76);
-//    f->makeWall(9);
-//    f->makeWall(34);
+    f->makeWall(15);
+    f->makeWall(32);
+    f->makeWall(76);
+    f->makeWall(9);
+    f->makeWall(34);
 
-    Creator *coinsFabric = new CoinCreator(); // Монетный двор (фабрика монет)
+    ICreator *coinsFabric = new CoinCreator(); // Монетный двор (фабрика монет)
     f->initItems(startCoords, *coinsFabric);
+
+    fileLogger = new FileLogger(player, LOG_FILE);
+    consoleLogger = new ConsoleLogger(player);
+   // fileLogger->unSubscribe();
+
+    // consoleLogger = new ConsoleLogger(f->_cells[2][2].item);
+    // fileLogger = new FileLogger(f->_cells[2][2].item);
 
     dbgGraph(f, start, end);
 
@@ -70,11 +77,12 @@ void Game::init() {
 void Game::checkCoinsStatus() {
     int x = player->x, y = player->y;
     // Прошел ли через монетку?
-    if (f->coins[x][y]->isAlive) {
-        *player += *(f->coins[x][y]); // Взаимодействие игрока с элементом через перегруженный оператор
-        f->coins[x][y]->isAlive = false;
+    Item *coin = f->_cells[x][y].item;
+    if (coin->isAlive()) {
+        *player += *(coin); // Взаимодействие игрока с элементом через перегруженный оператор
+        coin->setAlive(false);
     }
-//    cout << player->score << '\n';
+    coin->Notify();
 }
 
 void Game::checkEndStatus() {
@@ -82,8 +90,8 @@ void Game::checkEndStatus() {
     int cnt = 0;
     for (int i = 1; i <= height; i++) {
         for (int j = 1; j <= width; j++) {
-            Item *c = f->coins[i][j];
-            if (c && c->isAlive) cnt++;
+            Item *c = f->_cells[i][j].item;
+            if (c && c->isAlive()) cnt++;
         }
     }
     bool isEndReached = endCoords[0] == player->x && endCoords[1] == player->y;
@@ -98,10 +106,10 @@ void Game::tick() {
             gui.stop();
         if (events.type == sf::Event::KeyPressed) {
             processInput();
+            checkCoinsStatus();
+            checkEndStatus();
         }
     }
-    checkCoinsStatus();
-    checkEndStatus();
 }
 
 void Game::processInput() {
@@ -129,7 +137,6 @@ void Game::processInput() {
 }
 
 
-
 void Game::draw() {
     gui.clear();
     for (auto it : *f) {
@@ -140,4 +147,9 @@ void Game::draw() {
     gui.drawPlayer(*player);
     gui.drawCoins(f, endCoords[0], endCoords[1]);
     gui.display();
+}
+
+Game::~Game() {
+    delete consoleLogger;
+    delete fileLogger;
 }

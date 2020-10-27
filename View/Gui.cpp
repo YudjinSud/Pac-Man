@@ -15,15 +15,14 @@ void Gui::drawCoins(Field *f, int endX, int endY) {
     for (int i = 1; i <= height; i++) {
         for (int j = 1; j <= width; j++) {
             sf::Color color = sf::Color::Yellow;
-            Item *c = f->coins[i][j];
-            c->generate();
-            if (c && c->isAlive) {
-                if(c->x == endX && c->y == endY) {
+            Item *c = f->_cells[i][j].item;
+            if (c && c->isAlive()) {
+                if(c->getX() == endX && c->getY() == endY) {
                     color = sf::Color::Red;
                 }
                 drawCircleShape(color, coinSize,
-                                leftX + c->y * rectSize,
-                                leftY + c->x * rectSize);
+                                leftX + c->getY() * rectSize,
+                                leftY + c->getX() * rectSize);
             }
         }
     }

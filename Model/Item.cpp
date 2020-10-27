@@ -2,10 +2,10 @@
 // Created by yudjin on 10/6/20.
 //
 
+#include <sstream>
 #include "Item.h"
 
-void Item::generate() {
-    // TODO(YudjinSud)
-    // Рандомная генерация следующего буста/телепорта после съедения
+std::ostream &operator << (std::ostream &output, const Item& item) {
+    output << item.print();
+    return output;
 }
-

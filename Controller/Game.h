@@ -8,15 +8,19 @@
 
 #include <iostream>
 
-#include "../Model/Field.h"
-#include "../Model/Player.h"
-
-
 #include "../View/Gui.h"
+#include "../Model/Field.h"
+#include "../Model/Logger/ConsoleLogger.h"
+#include "../Model/Logger/FileLogger.h"
+#include "../Model/CoinCreator.h"
 
+#define LOG_FILE "../logs.txt"
 
 class Game {
 public:
+
+    ~Game();
+
     void tick();
 
     void draw();
@@ -30,6 +34,9 @@ public:
     Gui gui;
 
     Field *f;
+
+    ILogger *consoleLogger;
+    ILogger *fileLogger;
 
 private:
     int start,  end;

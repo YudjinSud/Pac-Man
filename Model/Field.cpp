@@ -26,7 +26,7 @@ void print(Cell **f) {
 
 void deepCopyField(Cell **f, Cell **s) {
 //    print(f);
-    print(s);
+//    print(s);
     f = new Cell *[height + wallOffset];
     for (int i = 0; i < height + wallOffset; i++) {
         f[i] = new Cell[width + wallOffset];
@@ -97,14 +97,12 @@ void Field::createGraph() {
 }
 
 
-void Field::initItems(int *startCoords, const Creator& creator) {
-    coins = std::vector<std::vector<Item*>>(height+1, std::vector<Item*>(width+1));
+void Field::initItems(int *startCoords, const ICreator& creator) {
     for(auto it : *this) {
-        if(it.is_available) {
-            coins[it.x][it.y] = creator.FactoryMethod(it.x,it.y);
-        }
+        _cells[it.x][it.y].item = creator.factoryMethod(it.x, it.y);
+        _cells[it.x][it.y].item->setAlive(it.is_available);
     }
-    coins[startCoords[0]][startCoords[1]]->isAlive = 0; // нет монетки на старте
+    _cells[startCoords[0]][startCoords[1]].item->setAlive(0); // нет монетки на старте
 }
 
 Field::Field(int start_num, int end_num) : _start_no(start_num), _end_no(end_num) {
@@ -173,7 +171,7 @@ void Field::makeWall(int x, int y) {
     }
 }
 
-bool Field::isAvailable(int x, int y) {
+bool Field::isAvailable(int x, int y) const {
     return _cells[x][y].is_available;
 }
 

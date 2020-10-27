@@ -3,6 +3,7 @@
 
 #include "Cell.h"
 #include "Item.h"
+#include "ICreator.h"
 
 #include <iterator>
 #include <iostream>
@@ -26,7 +27,6 @@ private:
 
     static Field *field;
 
-    Cell **_cells;
     int _start_no;
     int _end_no;
 
@@ -69,19 +69,20 @@ public:
 
     bool checkConnectedComponent();
 
-    bool isAvailable(int x, int y);
+    bool isAvailable(int x, int y) const;
 
     void makeWall(int num);
 
     void makeWall(int x, int y);
 
-    void initItems(int* startCoords, const Creator& creator);
+    void initItems(int* startCoords, const ICreator& creator);
 
-    int *coordsByNum(int num);
+    static int *coordsByNum(int num);
 
-    std::vector<std::vector<Item*>> coins;
 
     ~Field();
+
+    Cell **_cells;
 };
 
 

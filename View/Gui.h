@@ -31,7 +31,7 @@ public:
 
     void drawPlayer(Player player);
 
-    void drawCoins(Field *f, int, int);
+    void drawCoins(Field *f, int endX, int endY);
 
     void drawCircleShape(sf::Color color, int size, int x, int y);
 

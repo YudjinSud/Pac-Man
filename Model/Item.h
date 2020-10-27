@@ -7,64 +7,79 @@
 
 #include <random>
 #include <ctime>
+#include <iostream>
+#include <list>
+
+#include "Logger/ILogger.h"
+
+
+class ILogger;
 
 //Интерфейс объекта поля (монетка или буст)
 class Item {
+private:
+    Item();
+
 public:
-    Item(int x, int y) : x{x}, y{y} {}
+    Item(int x, int y) : _x(x), _y(y) {}
 
-    void generate();
+    virtual ~Item() = default;
 
-    virtual ~Item() {};
+    //region Get
+    virtual int getWeight() const = 0;
 
-    bool isAlive = true;
+    virtual bool isAlive() const = 0;
 
-    int weight;
+    virtual int getX() const = 0;
 
-    int x, y;
+    virtual int getY() const = 0;
+    //endregion
+
+    //region Set
+    void setAlive(bool val) {
+        _isAlive = val;
+        Notify();
+    }
+
+    void setX(int x) { _x = x; }
+
+    void setY(int y) { _y = y; }
+    //endregion
+
+    //region Logging System
+    virtual void Attach(ILogger *logger) = 0;
+
+    virtual void Detach(ILogger *logger) = 0;
+
+    virtual void Notify() const = 0;
+
+    friend std::istream &operator>>(std::istream &input, Item &item);
+
+    friend std::ostream &operator<<(std::ostream &output, const Item &item);
+
+    virtual std::string print() const = 0;
+    //endregion
+
+protected:
+    const int weight = 1;
+    int _x, _y;
+    bool _isAlive;
 };
 
-
-class Coin : public Item {
-public:
-    Coin(int x, int y) : Item{x, y} {}
-
-    ~Coin() override {}
-};
 
 
 class Boost : public Item {
-    Boost(int x, int y) : Item{x, y} {};
+    Boost(int x, int y) : Item(x, y) {}
 
     ~Boost() override {}
 };
 
 
 class Teleport : public Item {
-    Teleport(int x, int y) : Item{x, y} {};
+    Teleport(int x, int y) : Item(x, y) {}
 
     ~Teleport() override {}
 };
 
-
-//Factory
-class Creator {
-public:
-    virtual ~Creator() {};
-
-    virtual Item* FactoryMethod(int x, int y) const = 0;
-};
-
-
-class CoinCreator : public Creator {
-public:
-    Coin* FactoryMethod(int x, int y) const override {
-        Coin *c = new Coin(x,y);
-        c->weight  = 1;
-        return c;
-    }
-
-    ~CoinCreator() override = default;
-};
 
 #endif //OOP_ITEM_H
