@@ -6,20 +6,20 @@
 #define OOP_PLAYER_H
 
 #include "Field.h"
-
+#include "Algorithms/Point2D.h"
 #define startScore 0
 #define startLife 3
 
 
 class Player {
 public :
-    Player(int x, int y) : x(x), y(y) {};
+    Player(Point2D pos) : position(pos) {};
 
-    void move(int deltaX, int deltaY, bool is_available);
+    void move(Point2D delta, bool is_available);
 
     ~Player() = default;
 
-    int x, y;
+    Point2D position;
 
     int score = startScore, life = startLife;
 

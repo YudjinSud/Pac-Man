@@ -6,10 +6,9 @@
 
 #define log(x)  #x" = " << x << '\n'
 
-void Player::move(int deltaX, int deltaY, bool is_available) {
+void Player::move(Point2D delta, bool is_available) {
     if(is_available) {
-        x += deltaX;
-        y += deltaY;
+        this->position+=delta;
     }
     Notify();
     //std::cout << *this;
@@ -18,7 +17,7 @@ void Player::move(int deltaX, int deltaY, bool is_available) {
 
 std::ostream &operator << (std::ostream &output, const Player &player) {
     output << "-------------Player-------------\n";
-    output << log(player.x) << log(player.y) << log(player.life) << log(player.score);
+    output << log(player.position.x) << log(player.position.y) << log(player.life) << log(player.score);
     output << "------------EndPlayer-------------\n";
     return output;
 }

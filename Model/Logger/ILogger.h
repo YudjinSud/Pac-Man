@@ -23,7 +23,9 @@ public:
     static std::string currentDateTime();
 
     std::string loggerName;
+
 protected:
+
     Item * _item = nullptr;
     Player * _player = nullptr;
 };

@@ -10,6 +10,12 @@
 #include "../Model/Cell.h"
 #include "../Model/Player.h"
 
+
+#include <typeinfo>
+#include <iostream>
+using std::cout;
+using std::string;
+
 #define widthPixels 640
 #define heightPixels 640
 #define rectSize 25
@@ -29,7 +35,15 @@ public:
 
     void drawWall(Cell f);
 
-    void drawPlayer(Player player);
+    template<class T>
+    sf::Color getEntityColor(T *entity);
+
+    template<class T>
+    void drawEntity(T *entity) {
+        drawCircleShape(getEntityColor(entity), playerSize,
+                        leftX + entity->position.y * rectSize,
+                        leftY + entity->position.x * rectSize);
+    }
 
     void drawCoins(Field *f, int endX, int endY);
 
@@ -46,6 +60,20 @@ public:
 private:
     sf::RenderWindow window;
 };
+
+
+template<class T>
+sf::Color Gui::getEntityColor(T *entity) {
+    sf::Color color;
+    string entityName = typeid(*entity).name();
+    if( entityName == "6Player") {
+        color = sf::Color::Yellow;
+    }
+    else if(entityName == "5EnemyI11IEnemyStateE") {
+        color = sf::Color::Red;
+    }
+    return color;
+}
 
 
 #endif //OOP_GUI_H

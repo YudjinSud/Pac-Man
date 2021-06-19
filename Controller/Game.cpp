@@ -4,6 +4,7 @@
 
 #include "Game.h"
 
+
 #define RESET   "\033[0m"
 #define EXIT     "\033[1m\033[31m"      /* Bold Red */
 #define START   "\033[1m\033[32m"      /* Bold Green */
@@ -36,37 +37,49 @@ void dbgGraph(Field *f, int start, int end) {
 
 
 void Game::init() {
+    int restore;
+    cout << "Новая игра или из файла(0/1)?\n";
+    cin >> restore;
+    f = Field::GetInstance(start_no, end_no);
+    fieldCaretaker = new FieldCaretaker(f);
+    startCoords = f->coordsByNum(start_no);
+    endCoords = f->coordsByNum(end_no);
+
+    player = new Player({startCoords[0], startCoords[1]});
+    f->player = player;
+    if(restore) {
+        fieldCaretaker->initFromFile();
+    }
+    else {
+        // Необходимо проверять, что это не вход и не выход
+        f->makeWall(5);
+        f->makeWall(15);
+        f->makeWall(32);
+        f->makeWall(76);
+        f->makeWall(9);
+        f->makeWall(34);
+        ICreator *coinsFabric = new CoinCreator(); // Монетный двор (фабрика монет)
+        f->initItems(startCoords, *coinsFabric);
+    }
     gui.create();
-    // TODO(YudjinSud):
-    // Logging system which will enable configure game start/end point
-    // from file. Also this system should provide map-configuration.
 
-    start = 1, end = 66;
-    startCoords = f->coordsByNum(start);
-    endCoords = f->coordsByNum(end);
 
-    f = Field::GetInstance(start, end);
-    player = new Player(startCoords[0], startCoords[1]);
-
-    // Необходимо проверять, что это не вход и не выход
-    f->makeWall(5);
-    f->makeWall(15);
-    f->makeWall(32);
-    f->makeWall(76);
-    f->makeWall(9);
-    f->makeWall(34);
-
-    ICreator *coinsFabric = new CoinCreator(); // Монетный двор (фабрика монет)
-    f->initItems(startCoords, *coinsFabric);
-
-    fileLogger = new FileLogger(player, LOG_FILE);
+  //  fileLogger = new FileLogger(player, LOG_FILE);
     consoleLogger = new ConsoleLogger(player);
    // fileLogger->unSubscribe();
-
     // consoleLogger = new ConsoleLogger(f->_cells[2][2].item);
     // fileLogger = new FileLogger(f->_cells[2][2].item);
 
-    dbgGraph(f, start, end);
+    dbgGraph(f, start_no, end_no);
+
+    fieldCaretaker->backUp();
+    fieldCaretaker->history();
+
+    Enemy<IEnemyState> *akabei = new Enemy<IEnemyState>(player, {5, 5});
+    akabei->transitionState(new Scared());
+    akabei->transitionState(new Akabei());
+    akabei->scare();
+    enemies.push_back(akabei);
 
     while (gui.getWindow()->isOpen()) {
         tick();
@@ -75,7 +88,7 @@ void Game::init() {
 }
 
 void Game::checkCoinsStatus() {
-    int x = player->x, y = player->y;
+    int x = player->position.x, y = player->position.y;
     // Прошел ли через монетку?
     Item *coin = f->_cells[x][y].item;
     if (coin->isAlive()) {
@@ -83,6 +96,15 @@ void Game::checkCoinsStatus() {
         coin->setAlive(false);
     }
     coin->Notify();
+}
+
+bool Game::collisionWithEnemies() {
+    for(auto x : enemies) {
+        if(x->position == player->position) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Game::checkEndStatus() {
@@ -94,9 +116,18 @@ void Game::checkEndStatus() {
             if (c && c->isAlive()) cnt++;
         }
     }
-    bool isEndReached = endCoords[0] == player->x && endCoords[1] == player->y;
+    int x = player->position.x, y = player->position.y;
+    bool isEndReached = endCoords[0] == x && endCoords[1] == y;
     if (player->life == 0 || cnt == 0 || isEndReached) {
+        draw();
         gui.stop();
+        fieldCaretaker->backUp();
+    }
+    else if(collisionWithEnemies()) {
+        fieldCaretaker->undo();
+        enemies.back()->position = {5, 5};
+        player->life--;
+        fieldCaretaker->backUp();
     }
 }
 
@@ -106,6 +137,9 @@ void Game::tick() {
             gui.stop();
         if (events.type == sf::Event::KeyPressed) {
             processInput();
+            for(auto x : enemies) {
+                x->update();
+            }
             checkCoinsStatus();
             checkEndStatus();
         }
@@ -113,29 +147,29 @@ void Game::tick() {
 }
 
 void Game::processInput() {
+    int x = player->position.x, y = player->position.y;
     switch (events.key.code) {
         case sf::Keyboard::Up:
-            player->move(-1, 0,
-                         f->isAvailable(player->x - 1, player->y));
+            player->move({-1, 0},
+                         f->isAvailable(x - 1, y));
             break;
         case sf::Keyboard::Left:
-            player->move(0, -1,
-                         f->isAvailable(player->x, player->y - 1));
+            player->move({0, -1},
+                         f->isAvailable(x, y - 1));
             break;
         case sf::Keyboard::Right:
-            player->move(0, 1,
-                         f->isAvailable(player->x, player->y + 1));
+            player->move({0, 1},
+                         f->isAvailable(x, y + 1));
             break;
         case sf::Keyboard::Down:
-            player->move(1, 0,
-                         f->isAvailable(player->x + 1, player->y));
+            player->move({1, 0},
+                         f->isAvailable(x + 1, y));
             break;
         case sf::Keyboard::Escape:
+            fieldCaretaker->backUp();
             gui.stop();
     }
-
 }
-
 
 void Game::draw() {
     gui.clear();
@@ -144,12 +178,10 @@ void Game::draw() {
             gui.drawWall(it);
         }
     }
-    gui.drawPlayer(*player);
+    for(auto x : enemies) {
+        gui.drawEntity(x);
+    }
+    gui.drawEntity<Player>(player);
     gui.drawCoins(f, endCoords[0], endCoords[1]);
     gui.display();
-}
-
-Game::~Game() {
-    delete consoleLogger;
-    delete fileLogger;
 }

@@ -13,19 +13,35 @@
 #include "../Model/Logger/ConsoleLogger.h"
 #include "../Model/Logger/FileLogger.h"
 #include "../Model/CoinCreator.h"
+#include "../Model/Enemy.h"
+#include "../Model/Akabei.h"
+#include "../Model/Scared.h"
+#include "../Model/FieldCaretaker.h"
 
 #define LOG_FILE "../logs.txt"
 
 class Game {
 public:
+    void init();
 
-    ~Game();
+private:
+    int *startCoords, *endCoords;
+
+    Player *player;
+
+    FieldCaretaker *fieldCaretaker;
+
+    void checkCoinsStatus();
+
+    void checkEndStatus();
+
+    bool collisionWithEnemies();
+
+    std::list<Enemy<IEnemyState> *> enemies;
 
     void tick();
 
     void draw();
-
-    void init();
 
     void processInput();
 
@@ -37,16 +53,6 @@ public:
 
     ILogger *consoleLogger;
     ILogger *fileLogger;
-
-private:
-    int start,  end;
-    int *startCoords, *endCoords;
-
-    Player *player;
-
-    void checkCoinsStatus();
-
-    void checkEndStatus();
 
 };
 

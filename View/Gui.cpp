@@ -5,12 +5,6 @@
 #include "Gui.h"
 
 
-void Gui::drawPlayer(Player player) {
-    drawCircleShape(sf::Color::Yellow, playerSize,
-                    leftX + player.y * rectSize,
-                    leftY + player.x * rectSize);
-}
-
 void Gui::drawCoins(Field *f, int endX, int endY) {
     for (int i = 1; i <= height; i++) {
         for (int j = 1; j <= width; j++) {
@@ -69,3 +63,5 @@ sf::RenderWindow* Gui::create() {
     this->window.create(sf::VideoMode(widthPixels, heightPixels), "PAC-MAN");
     return &window;
 }
+
+
